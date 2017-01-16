@@ -24,7 +24,7 @@ define staging::file (
   $owner       = undef, #: file owner in the local filesystem for the target
   $group       = undef, #: file group in the local filesystem for the target
   $mode        = undef, #: file mode in the local filesystem for the target
-  $subdir      = $caller_module_name
+  $subdir      = $caller_module_name,
   $exec_path   = $staging::exec_path,
 ) {
 
@@ -125,6 +125,7 @@ define staging::file (
       else         { $command = $http_get        }
       exec { $target_file:
         command   => $command,
+        path    => $exec_path,
       }
     }
     /^https:\/\//: {
