@@ -25,6 +25,7 @@ define staging::file (
   $group       = undef, #: file group in the local filesystem for the target
   $mode        = undef, #: file mode in the local filesystem for the target
   $subdir      = $caller_module_name
+  $exec_path   = $staging::exec_path,
 ) {
 
   include ::staging
@@ -40,13 +41,12 @@ define staging::file (
 
     if ! defined(File[$staging_dir]) {
       file { $staging_dir:
-        ensure=>directory,
+        ensure => directory,
       }
     }
   }
 
   Exec {
-    path        => $staging::exec_path,
     environment => $environment,
     cwd         => $staging_dir,
     creates     => $target_file,
@@ -133,19 +133,22 @@ define staging::file (
       else               { $command = $http_get        }
       exec { $target_file:
         command => $command,
+        path    => $exec_path,
       }
     }
     /^ftp:\/\//: {
       if $username       { $command = $ftp_get_passwd }
       else               { $command = $ftp_get        }
       exec { $target_file:
-        command     => $command,
+        command => $command,
+        path    => $exec_path,
       }
     }
     /^s3:\/\//: {
       $command = "aws s3 cp ${source} ${target_file}"
       exec { $target_file:
-        command   => $command,
+        command => $command,
+        path    => $exec_path,
       }
     }
     default: {
