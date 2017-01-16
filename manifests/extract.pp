@@ -10,7 +10,8 @@ define staging::extract (
   $environment = undef, #: environment variables.
   $strip       = undef, #: extract file with the --strip=X option. Only works with GNU tar.
   $unzip_opts  = '',    #: additional options to pass the unzip command.
-  $subdir      = $caller_module_name #: subdir per module in staging directory.
+  $subdir      = $caller_module_name, #: subdir per module in staging directory.
+  $exec_path   = $staging::exec_path,
 ) {
 
   include ::staging
@@ -42,29 +43,15 @@ define staging::extract (
     $creates_path = undef
   }
 
-  if scope_defaults('Exec','path') {
-    Exec{
-      cwd         => $target,
-      user        => $user,
-      group       => $group,
-      environment => $environment,
-      creates     => $creates_path,
-      unless      => $unless,
-      onlyif      => $onlyif,
-      logoutput   => on_failure,
-    }
-  } else {
-    Exec{
-      path        => $::path,
-      cwd         => $target,
-      user        => $user,
-      group       => $group,
-      environment => $environment,
-      creates     => $creates_path,
-      unless      => $unless,
-      onlyif      => $onlyif,
-      logoutput   => on_failure,
-    }
+  Exec {
+    cwd         => $target,
+    user        => $user,
+    group       => $group,
+    environment => $environment,
+    creates     => $creates_path,
+    unless      => $unless,
+    onlyif      => $onlyif,
+    logoutput   => on_failure,
   }
 
   if $strip {
@@ -122,5 +109,6 @@ define staging::extract (
 
   exec { "extract ${name}":
     command => $command,
+    path    => $exec_path
   }
 }
